@@ -6,6 +6,7 @@
 #include <string.h>
 #include <string>
 #include <vector>
+#include <math.h>
 
 using namespace std;
 
@@ -80,8 +81,16 @@ void exibirDataset()
 	}
 }
 
+float calcularEuclidiana(flower *a, flower *b)
+{
+	float diferenca = pow((a->f1 - b->f1),2) + pow((a->f2 - b->f2),2) + pow((a->f3 - b->f3),2) + pow((a->f4 - b->f4),2);
+	return sqrt(diferenca);
+}
+
 int main () { 
 	criarDataset();
-	exibirDataset();
+//	exibirDataset();
+	float euclidiana = calcularEuclidiana(&dataset[0], &dataset[1]);
+	printf("%f", euclidiana);
   	return 0;
 }

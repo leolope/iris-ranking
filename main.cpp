@@ -5,15 +5,12 @@
 #include <fstream>
 #include <string.h>
 #include <string>
-#include <vector>
 #include <math.h>
-#include <time.h> 
-#include <algorithm>
 
 using namespace std;
 
 const int DATA_SIZE = 150;
-const int K_SIZE = 20;
+const int K_SIZE = 50;
 
 typedef struct {
   int id;
@@ -31,9 +28,8 @@ typedef struct {
 
 flower *dataset;
 
-posicao *rankingf1, *rankingf2, *rankingf3, *rankingf4;
+posicao *rankingMedias;
 
-int *sparseMatrix;
 
 // MERGE SORT
 void merge(posicao *arr, int l, int m, int r) 
@@ -99,20 +95,19 @@ void criarDataset()
 {
 	float convert;
 	dataset =(flower*) malloc(DATA_SIZE * sizeof(flower));
-	rankingf1 = (posicao*) malloc(DATA_SIZE * sizeof(posicao));
-	rankingf2 = (posicao*) malloc(DATA_SIZE * sizeof(posicao));
-	rankingf3 = (posicao*) malloc(DATA_SIZE * sizeof(posicao));
-	rankingf4 = (posicao*) malloc(DATA_SIZE * sizeof(posicao));
+	rankingMedias = (posicao*) malloc(DATA_SIZE * sizeof(posicao));
 	string line, part, all;
 	size_t search;
 	char * pch;
 	string delimiter = ",";
 	ifstream myfile ("iris.data");
+	float soma = 0;
 	if (myfile.is_open())
 	{
 		int pos = 0; 	
 		while ( getline (myfile,line) )
 		{
+			soma = 0;
 			all = line.substr(0);
 			// ID
 			dataset[pos].id = pos;      
@@ -122,8 +117,8 @@ void criarDataset()
 			convert = strtof(all.c_str(),0);
 			dataset[pos].f1 = convert;
 			
-			// Ranking feature 1
-			rankingf1[pos].valor = convert;
+			// Soma para totalizar média
+			soma += convert * 1;
 						
 			//      Segunda feature
 			all =  all.substr(search+1);
@@ -131,8 +126,8 @@ void criarDataset()
 			convert = strtof(all.c_str(),0);
 			dataset[pos].f2 = convert;
 			
-			// Ranking feature 2
-			rankingf2[pos].valor = convert;
+			// Soma para totalizar média
+			soma += convert * 2;
 			
 			//      Terceira feature
 			all =  all.substr(search+1);
@@ -140,8 +135,8 @@ void criarDataset()
 			convert = strtof(all.c_str(),0);
 			dataset[pos].f3 = convert;
 			
-			// Ranking feature 3
-			rankingf3[pos].valor = convert;
+			// Soma para totalizar média
+			soma += convert * 3;
 			
 			
 			//      Quarta feature
@@ -150,8 +145,8 @@ void criarDataset()
 			convert = strtof(all.c_str(),0);
 			dataset[pos].f4 = convert;
 			
-			// Ranking feature 4
-			rankingf4[pos].valor = convert;
+			// Soma para totalizar média
+			soma += convert * 4;
 			
 			
 			// Classe
@@ -159,21 +154,16 @@ void criarDataset()
 			dataset[pos].classe = new char[all.length() + 1];
 		  	strcpy(dataset[pos].classe, all.c_str());
 		  	
-			// Link do objeto dataset dentro dos rankings de features
-			rankingf1[pos].flor = dataset[pos];	
-			rankingf2[pos].flor = dataset[pos];	
-			rankingf3[pos].flor = dataset[pos];	
-			rankingf4[pos].flor = dataset[pos];		  	
+			// Preenchimento do ranking de médias
+			rankingMedias[pos].valor = soma / 4;
+			rankingMedias[pos].flor = dataset[pos];	  	
 
 			pos++;
 		}
 		myfile.close();
 		
 		// Ordenacao dos rankings de features
-		mergeSort(rankingf1, 0, DATA_SIZE - 1);
-		mergeSort(rankingf2, 0, DATA_SIZE - 1);	  
-		mergeSort(rankingf3, 0, DATA_SIZE - 1);	  
-		mergeSort(rankingf4, 0, DATA_SIZE - 1);	  
+		mergeSort(rankingMedias, 0, DATA_SIZE - 1);
 	}
 	else 
 	{
@@ -212,28 +202,10 @@ void exibirDataset()
 		printf("%f %f %f %f %s\n", dataset[x].f1, dataset[x].f2, dataset[x].f3, dataset[x].f4, dataset[x].classe);
 	}
 	
-	printf("\nRANKING F1\n\n");
+	printf("\nRANKING MEDIAS\n\n");
 	for(int x = 0; x < DATA_SIZE; x++)
 	{
-		printf("%.2f\n", rankingf1[x].valor);
-	}
-	
-	printf("\nRANKING F2\n\n");
-	for(int x = 0; x < DATA_SIZE; x++)
-	{
-		printf("%.2f\n", rankingf2[x].valor);
-	}
-	
-	printf("\nRANKING F3\n\n");
-	for(int x = 0; x < DATA_SIZE; x++)
-	{
-		printf("%.2f\n", rankingf3[x].valor);
-	}
-	
-	printf("\nRANKING F4\n\n");
-	for(int x = 0; x < DATA_SIZE; x++)
-	{
-		printf("%.2f\n", rankingf4[x].valor);
+		printf("%.2f\n", rankingMedias[x].valor);
 	}
 }
 
@@ -291,99 +263,12 @@ void filtrarRanking(posicao *novoRanking, posicao *ranking, int index)
 	}
 }
 
-bool vectorSort (int i,int j)
+void gerarRankingMedias(posicao *ranking, flower *flor)
 {
-	return (sparseMatrix[i] > sparseMatrix[j]);
-}
-
-void kRankingToVector(vector<int> *vector, posicao *ranking, int *sparseMatrix)
-{
-	for(int x = 0; x < K_SIZE; x++)
-	{
-		int id = ranking[x].flor.id;
-//		printf("id-- %d\n", id);
-//		printf("valor-- %d\n", K_SIZE - x);
-		if(sparseMatrix[id] == 0)
-		{
-			vector->push_back(id);
-		}
-//		printf("valor antes-- %d\n", sparseMatrix[id]);
-		sparseMatrix[id] += K_SIZE - x;
-//		printf("valor depois-- %d\n\n", sparseMatrix[id]);
-	}
-//	printf("\n\n");	
-}
-
-void gerarRankingFeatures(vector<int> *ranking, flower *flor)
-{
-	posicao *kRankingf1, *kRankingf2, *kRankingf3, *kRankingf4;
+	float mediaFlor = (flor->f1 * 1 + flor->f2 * 2 + flor->f3 * 3 + flor->f4 * 4) / 4;
 	int index = 0;
-	index = buscaBinaria(rankingf1, 0, DATA_SIZE, flor->f1);
-	kRankingf1 = (posicao*) malloc(K_SIZE * sizeof(posicao));
-	filtrarRanking(kRankingf1, rankingf1, index);
-	
-//	printf("\nK RANKING 1\n\n");
-//	for(int x = 0; x < K_SIZE; x++)
-//	{
-//		printf("valor: %.2f - id: %d - f1: %.2f - f2: %.2f - f3: %.2f - f4: %.2f\n", kRankingf1[x].valor, kRankingf1[x].flor.id, kRankingf1[x].flor.f1, kRankingf1[x].flor.f2, kRankingf1[x].flor.f3, kRankingf1[x].flor.f4);
-//	}
-	
-	
-	kRankingf2 = (posicao*) malloc(K_SIZE * sizeof(posicao));
-	filtrarRanking(kRankingf2, rankingf2, index);
-	
-//	printf("\nK RANKING 2\n\n");
-//	for(int x = 0; x < K_SIZE; x++)
-//	{
-//		printf("valor: %.2f - id: %d - f1: %.2f - f2: %.2f - f3: %.2f - f4: %.2f\n", kRankingf2[x].valor, kRankingf2[x].flor.id, kRankingf2[x].flor.f1, kRankingf2[x].flor.f2, kRankingf2[x].flor.f3, kRankingf2[x].flor.f4);
-//	}
-	
-	kRankingf3 = (posicao*) malloc(K_SIZE * sizeof(posicao));
-	filtrarRanking(kRankingf3, rankingf3, index);
-	
-//	printf("\nK RANKING 3\n\n");
-//	for(int x = 0; x < K_SIZE; x++)
-//	{
-//		printf("valor: %.2f - id: %d - f1: %.2f - f2: %.2f - f3: %.2f - f4: %.2f\n", kRankingf3[x].valor, kRankingf3[x].flor.id, kRankingf3[x].flor.f1, kRankingf3[x].flor.f2, kRankingf3[x].flor.f3, kRankingf3[x].flor.f4);
-//	}
-	
-	kRankingf4 = (posicao*) malloc(K_SIZE * sizeof(posicao));
-	filtrarRanking(kRankingf4, rankingf4, index);
-	
-//	printf("\nK RANKING 4\n\n");
-//	for(int x = 0; x < K_SIZE; x++)
-//	{
-//		printf("valor: %.2f - id: %d - f1: %.2f - f2: %.2f - f3: %.2f - f4: %.2f\n", kRankingf4[x].valor, kRankingf4[x].flor.id, kRankingf4[x].flor.f1, kRankingf4[x].flor.f2, kRankingf4[x].flor.f3, kRankingf4[x].flor.f4);
-//	}
-	
-	sparseMatrix = (int*) malloc(DATA_SIZE * sizeof(int));
-	for(int x = 0; x < DATA_SIZE; x++)
-	{
-		sparseMatrix[x] = 0;
-	}
-	kRankingToVector(ranking, kRankingf1, sparseMatrix);
-	kRankingToVector(ranking, kRankingf2, sparseMatrix);
-	kRankingToVector(ranking, kRankingf3, sparseMatrix);
-	kRankingToVector(ranking, kRankingf4, sparseMatrix);
-	
-	// Após gerar vetor, fazemos a ordenação
-	sort(ranking->begin(), ranking->end(), vectorSort);	
-	
-	
-//	for(int x = 0; x < DATA_SIZE; x++)
-//	{
-//		if(sparseMatrix[x] != 0)
-//		{
-//			printf("valor: %d - id: %d\n", sparseMatrix[x], x);
-//		}
-//	}
-	
-	printf("\n\n");
-	
-//	for(int x = 0; x < ranking->size(); x++)
-//	{
-//		printf("vetor id: %d\n", ranking->at(x));
-//	}
+	index = buscaBinaria(rankingMedias, 0, DATA_SIZE, mediaFlor);
+	filtrarRanking(ranking, rankingMedias, index);
 }
 
 float calcularPorcentagemAcerto(posicao *ranking, flower *flor)
@@ -400,32 +285,22 @@ float calcularPorcentagemAcerto(posicao *ranking, flower *flor)
 	return acertos * 100 / K_SIZE;
 }
 
-float calcularPorcentagemAcertoFeatures(vector<int> *ranking, flower *flor)
-{
-	int acertos = 0;
-	for(int x = 0; x < K_SIZE; x++)
-	{
-		if(strcmp(dataset[ranking->at(x)].classe, flor->classe) == 0 )
-		{
-			acertos++;
-		}
-	}
-	
-	return acertos * 100 / K_SIZE;
-}
-
 int main () { 
 	criarDataset();
-//	exibirDataset();
+	
+	for(int x = 0; x < DATA_SIZE; x++)
+	{
+		printf("index: %d -- valor: %.2f\n", x, rankingMedias[x].valor);
+	}
+	
+	printf("\n\n");
 
-	// Escolha de uma flor genérica
 	float totalEuclidiana = 0;
-	float totalFeatures = 0;
+	float totalMedias = 0;
 	for(int x = 0; x < DATA_SIZE; x++)
 	{
 		int idEscolhido = x;
 		printf("Flor escolhida: %d - Classe: %s - F1: %.2f - F2: %.2f - F3: %.2f - F4: %.2f\n\n", dataset[idEscolhido].id, dataset[idEscolhido].classe, dataset[idEscolhido].f1, dataset[idEscolhido].f2, dataset[idEscolhido].f3, dataset[idEscolhido].f4);
-		
 		
 		// Ranking Euclidiana	
 		posicao *euclidiana;
@@ -438,19 +313,18 @@ int main () {
 		printf("Percentagem do ranking euclidiana: %.2f%%\n", porcentagem);	
 		
 		// Montagem do ranking beseado em features
-		vector<int>	features;
-		gerarRankingFeatures(&features, &dataset[idEscolhido]);
-		// Cálculo da porcentagem de acertos do ranking de features
-		float porcentagemFeatures = calcularPorcentagemAcertoFeatures(&features, &dataset[idEscolhido]);
-		totalFeatures += porcentagemFeatures;
-		printf("Percentagem do ranking features: %.2f%%\n", porcentagemFeatures);	
+		posicao *medias = (posicao*) malloc(K_SIZE * sizeof(posicao));
+		gerarRankingMedias(medias, &dataset[idEscolhido]);
+		float porcentagemMedia = calcularPorcentagemAcerto(medias, &dataset[idEscolhido]);
+		totalMedias += porcentagemMedia;
+		printf("Porcentagem do ranking de medias: %.2f%%\n", porcentagemMedia);
 	}
 	
 	printf("\n\n");
 	
 	totalEuclidiana = totalEuclidiana / DATA_SIZE;
-	totalFeatures = totalFeatures / DATA_SIZE;
+	totalMedias = totalMedias / DATA_SIZE;
 	
 	printf("Media de acertos no ranking euclidiana: %.2f%%\n", totalEuclidiana);
-	printf("Media de acertos no ranking de features: %.2f%%", totalFeatures);
+	printf("Media de acertos no ranking de medias: %.2f%%", totalMedias);
 }

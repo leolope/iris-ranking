@@ -7,13 +7,12 @@
 #include <string>
 #include <vector>
 #include <math.h>
-#include <time.h> 
 #include <algorithm>
 
 using namespace std;
 
 const int DATA_SIZE = 150;
-const int K_SIZE = 20;
+const int K_SIZE = 10;
 
 typedef struct {
   int id;
@@ -301,17 +300,12 @@ void kRankingToVector(vector<int> *vector, posicao *ranking, int *sparseMatrix)
 	for(int x = 0; x < K_SIZE; x++)
 	{
 		int id = ranking[x].flor.id;
-//		printf("id-- %d\n", id);
-//		printf("valor-- %d\n", K_SIZE - x);
 		if(sparseMatrix[id] == 0)
 		{
 			vector->push_back(id);
 		}
-//		printf("valor antes-- %d\n", sparseMatrix[id]);
 		sparseMatrix[id] += K_SIZE - x;
-//		printf("valor depois-- %d\n\n", sparseMatrix[id]);
 	}
-//	printf("\n\n");	
 }
 
 void gerarRankingFeatures(vector<int> *ranking, flower *flor)
@@ -320,41 +314,16 @@ void gerarRankingFeatures(vector<int> *ranking, flower *flor)
 	int index = 0;
 	index = buscaBinaria(rankingf1, 0, DATA_SIZE, flor->f1);
 	kRankingf1 = (posicao*) malloc(K_SIZE * sizeof(posicao));
-	filtrarRanking(kRankingf1, rankingf1, index);
-	
-//	printf("\nK RANKING 1\n\n");
-//	for(int x = 0; x < K_SIZE; x++)
-//	{
-//		printf("valor: %.2f - id: %d - f1: %.2f - f2: %.2f - f3: %.2f - f4: %.2f\n", kRankingf1[x].valor, kRankingf1[x].flor.id, kRankingf1[x].flor.f1, kRankingf1[x].flor.f2, kRankingf1[x].flor.f3, kRankingf1[x].flor.f4);
-//	}
-	
+	filtrarRanking(kRankingf1, rankingf1, index);	
 	
 	kRankingf2 = (posicao*) malloc(K_SIZE * sizeof(posicao));
 	filtrarRanking(kRankingf2, rankingf2, index);
 	
-//	printf("\nK RANKING 2\n\n");
-//	for(int x = 0; x < K_SIZE; x++)
-//	{
-//		printf("valor: %.2f - id: %d - f1: %.2f - f2: %.2f - f3: %.2f - f4: %.2f\n", kRankingf2[x].valor, kRankingf2[x].flor.id, kRankingf2[x].flor.f1, kRankingf2[x].flor.f2, kRankingf2[x].flor.f3, kRankingf2[x].flor.f4);
-//	}
-	
 	kRankingf3 = (posicao*) malloc(K_SIZE * sizeof(posicao));
 	filtrarRanking(kRankingf3, rankingf3, index);
 	
-//	printf("\nK RANKING 3\n\n");
-//	for(int x = 0; x < K_SIZE; x++)
-//	{
-//		printf("valor: %.2f - id: %d - f1: %.2f - f2: %.2f - f3: %.2f - f4: %.2f\n", kRankingf3[x].valor, kRankingf3[x].flor.id, kRankingf3[x].flor.f1, kRankingf3[x].flor.f2, kRankingf3[x].flor.f3, kRankingf3[x].flor.f4);
-//	}
-	
 	kRankingf4 = (posicao*) malloc(K_SIZE * sizeof(posicao));
 	filtrarRanking(kRankingf4, rankingf4, index);
-	
-//	printf("\nK RANKING 4\n\n");
-//	for(int x = 0; x < K_SIZE; x++)
-//	{
-//		printf("valor: %.2f - id: %d - f1: %.2f - f2: %.2f - f3: %.2f - f4: %.2f\n", kRankingf4[x].valor, kRankingf4[x].flor.id, kRankingf4[x].flor.f1, kRankingf4[x].flor.f2, kRankingf4[x].flor.f3, kRankingf4[x].flor.f4);
-//	}
 	
 	sparseMatrix = (int*) malloc(DATA_SIZE * sizeof(int));
 	for(int x = 0; x < DATA_SIZE; x++)
@@ -366,24 +335,7 @@ void gerarRankingFeatures(vector<int> *ranking, flower *flor)
 	kRankingToVector(ranking, kRankingf3, sparseMatrix);
 	kRankingToVector(ranking, kRankingf4, sparseMatrix);
 	
-	// Após gerar vetor, fazemos a ordenação
 	sort(ranking->begin(), ranking->end(), vectorSort);	
-	
-	
-//	for(int x = 0; x < DATA_SIZE; x++)
-//	{
-//		if(sparseMatrix[x] != 0)
-//		{
-//			printf("valor: %d - id: %d\n", sparseMatrix[x], x);
-//		}
-//	}
-	
-	printf("\n\n");
-	
-//	for(int x = 0; x < ranking->size(); x++)
-//	{
-//		printf("vetor id: %d\n", ranking->at(x));
-//	}
 }
 
 float calcularPorcentagemAcerto(posicao *ranking, flower *flor)
@@ -416,7 +368,6 @@ float calcularPorcentagemAcertoFeatures(vector<int> *ranking, flower *flor)
 
 int main () { 
 	criarDataset();
-//	exibirDataset();
 
 	// Escolha de uma flor genérica
 	float totalEuclidiana = 0;

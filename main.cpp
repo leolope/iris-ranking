@@ -419,24 +419,38 @@ int main () {
 //	exibirDataset();
 
 	// Escolha de uma flor genérica
-	srand (time(NULL));
-	int idEscolhido = (rand() % 150) - 1;
+	float totalEuclidiana = 0;
+	float totalFeatures = 0;
+	for(int x = 0; x < DATA_SIZE; x++)
+	{
+		int idEscolhido = x;
+		printf("Flor escolhida: %d - Classe: %s - F1: %.2f - F2: %.2f - F3: %.2f - F4: %.2f\n\n", dataset[idEscolhido].id, dataset[idEscolhido].classe, dataset[idEscolhido].f1, dataset[idEscolhido].f2, dataset[idEscolhido].f3, dataset[idEscolhido].f4);
+		
+		
+		// Ranking Euclidiana	
+		posicao *euclidiana;
+		euclidiana = (posicao*) malloc(DATA_SIZE * sizeof(posicao));
+		gerarRankingEuclidiana(euclidiana, &dataset[idEscolhido]);
+		//	
+		// Cálculo de porcentagem de acertos da euclidiana
+		float porcentagem = calcularPorcentagemAcerto(euclidiana, &dataset[idEscolhido]);
+		totalEuclidiana += porcentagem;
+		printf("Percentagem do ranking euclidiana: %.2f%%\n", porcentagem);	
+		
+		// Montagem do ranking beseado em features
+		vector<int>	features;
+		gerarRankingFeatures(&features, &dataset[idEscolhido]);
+		// Cálculo da porcentagem de acertos do ranking de features
+		float porcentagemFeatures = calcularPorcentagemAcertoFeatures(&features, &dataset[idEscolhido]);
+		totalFeatures += porcentagemFeatures;
+		printf("Percentagem do ranking features: %.2f%%\n", porcentagemFeatures);	
+	}
 	
-	printf("Flor escolhida: %d - Classe: %s - F1: %.2f - F2: %.2f - F3: %.2f - F4: %.2f\n\n", dataset[idEscolhido].id, dataset[idEscolhido].classe, dataset[idEscolhido].f1, dataset[idEscolhido].f2, dataset[idEscolhido].f3, dataset[idEscolhido].f4);
+	printf("\n\n");
 	
+	totalEuclidiana = totalEuclidiana / DATA_SIZE;
+	totalFeatures = totalFeatures / DATA_SIZE;
 	
-	// Ranking Euclidiana	
-	posicao *euclidiana;
-	euclidiana = (posicao*) malloc(DATA_SIZE * sizeof(posicao));
-	gerarRankingEuclidiana(euclidiana, &dataset[idEscolhido]);
-//	
-//	// Cálculo de porcentagem de acertos da euclidiana
-	float porcentagem = calcularPorcentagemAcerto(euclidiana, &dataset[idEscolhido]);
-	printf("Percentagem do ranking euclidiana: %.2f%%\n", porcentagem);	
-	
-	// Montagem do ranking beseado em features
-	vector<int>	features;
-	gerarRankingFeatures(&features, &dataset[idEscolhido]);
-	float porcentagemFeatures = calcularPorcentagemAcertoFeatures(&features, &dataset[idEscolhido]);
-	printf("Percentagem do ranking features: %.2f%%\n", porcentagemFeatures);	
+	printf("Media de acertos no ranking euclidiana: %.2f%%\n", totalEuclidiana);
+	printf("Media de acertos no ranking de features: %.2f%%", totalFeatures);
 }

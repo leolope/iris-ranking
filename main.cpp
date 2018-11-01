@@ -10,7 +10,7 @@
 using namespace std;
 
 const int DATA_SIZE = 150;
-const int K_SIZE = 50;
+const int K_SIZE = 20;
 
 typedef struct {
   int id;
@@ -155,7 +155,7 @@ void criarDataset()
 		  	strcpy(dataset[pos].classe, all.c_str());
 		  	
 			// Preenchimento do ranking de médias
-			rankingMedias[pos].valor = soma / 4;
+			rankingMedias[pos].valor = soma / 10;
 			rankingMedias[pos].flor = dataset[pos];	  	
 
 			pos++;
@@ -265,7 +265,7 @@ void filtrarRanking(posicao *novoRanking, posicao *ranking, int index)
 
 void gerarRankingMedias(posicao *ranking, flower *flor)
 {
-	float mediaFlor = (flor->f1 * 1 + flor->f2 * 2 + flor->f3 * 3 + flor->f4 * 4) / 4;
+	float mediaFlor = (flor->f1 * 1 + flor->f2 * 2 + flor->f3 * 3 + flor->f4 * 4) / 10;
 	int index = 0;
 	index = buscaBinaria(rankingMedias, 0, DATA_SIZE, mediaFlor);
 	filtrarRanking(ranking, rankingMedias, index);

@@ -12,7 +12,7 @@
 using namespace std;
 
 const int DATA_SIZE = 150;
-const int K_SIZE = 10;
+const int K_SIZE = 50;
 
 typedef struct {
   int id;
@@ -109,9 +109,10 @@ void criarDataset()
 	ifstream myfile ("iris.data");
 	if (myfile.is_open())
 	{
-		int pos = 0; 	
+		int pos = 0;	
 		while ( getline (myfile,line) )
 		{
+			float soma = 0;
 			all = line.substr(0);
 			// ID
 			dataset[pos].id = pos;      
@@ -123,6 +124,7 @@ void criarDataset()
 			
 			// Ranking feature 1
 			rankingf1[pos].valor = convert;
+			soma += convert;
 						
 			//      Segunda feature
 			all =  all.substr(search+1);
@@ -132,6 +134,7 @@ void criarDataset()
 			
 			// Ranking feature 2
 			rankingf2[pos].valor = convert;
+			soma += convert;
 			
 			//      Terceira feature
 			all =  all.substr(search+1);
@@ -141,6 +144,7 @@ void criarDataset()
 			
 			// Ranking feature 3
 			rankingf3[pos].valor = convert;
+			soma += convert;
 			
 			
 			//      Quarta feature
@@ -148,6 +152,7 @@ void criarDataset()
 			search = all.find(delimiter);
 			convert = strtof(all.c_str(),0);
 			dataset[pos].f4 = convert;
+			soma += convert;
 			
 			// Ranking feature 4
 			rankingf4[pos].valor = convert;
@@ -162,7 +167,13 @@ void criarDataset()
 			rankingf1[pos].flor = dataset[pos];	
 			rankingf2[pos].flor = dataset[pos];	
 			rankingf3[pos].flor = dataset[pos];	
-			rankingf4[pos].flor = dataset[pos];		  	
+			rankingf4[pos].flor = dataset[pos];
+			
+			rankingf1[pos].valor = rankingf1[pos].valor / soma;	
+			rankingf2[pos].valor = rankingf2[pos].valor / soma;	
+			rankingf3[pos].valor = rankingf3[pos].valor / soma;	
+			rankingf4[pos].valor = rankingf4[pos].valor / soma;		  	
+		  	
 
 			pos++;
 		}
@@ -300,7 +311,7 @@ void kRankingToVector(vector<int> *vector, posicao *ranking, int *sparseMatrix)
 	for(int x = 0; x < K_SIZE; x++)
 	{
 		int id = ranking[x].flor.id;
-		if(sparseMatrix[id] == 0)
+		if(sparseMatrix[id] == NULL)
 		{
 			vector->push_back(id);
 		}
@@ -311,24 +322,28 @@ void kRankingToVector(vector<int> *vector, posicao *ranking, int *sparseMatrix)
 void gerarRankingFeatures(vector<int> *ranking, flower *flor)
 {
 	posicao *kRankingf1, *kRankingf2, *kRankingf3, *kRankingf4;
+	float soma = flor->f1 + flor->f2 + flor->f3 + flor->f4;
 	int index = 0;
-	index = buscaBinaria(rankingf1, 0, DATA_SIZE, flor->f1);
+	index = buscaBinaria(rankingf1, 0, DATA_SIZE, flor->f1 / soma);
 	kRankingf1 = (posicao*) malloc(K_SIZE * sizeof(posicao));
 	filtrarRanking(kRankingf1, rankingf1, index);	
 	
+	index = buscaBinaria(rankingf2, 0, DATA_SIZE, flor->f2 / soma);
 	kRankingf2 = (posicao*) malloc(K_SIZE * sizeof(posicao));
 	filtrarRanking(kRankingf2, rankingf2, index);
 	
+	index = buscaBinaria(rankingf3, 0, DATA_SIZE, flor->f3 / soma);
 	kRankingf3 = (posicao*) malloc(K_SIZE * sizeof(posicao));
 	filtrarRanking(kRankingf3, rankingf3, index);
 	
+	index = buscaBinaria(rankingf4, 0, DATA_SIZE, flor->f4 / soma);
 	kRankingf4 = (posicao*) malloc(K_SIZE * sizeof(posicao));
 	filtrarRanking(kRankingf4, rankingf4, index);
 	
 	sparseMatrix = (int*) malloc(DATA_SIZE * sizeof(int));
 	for(int x = 0; x < DATA_SIZE; x++)
 	{
-		sparseMatrix[x] = 0;
+		sparseMatrix[x] = NULL;
 	}
 	kRankingToVector(ranking, kRankingf1, sparseMatrix);
 	kRankingToVector(ranking, kRankingf2, sparseMatrix);

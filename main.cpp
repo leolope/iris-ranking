@@ -10,7 +10,7 @@
 using namespace std;
 
 const int DATA_SIZE = 150;
-const int K_SIZE = 20;
+const int K_SIZE = 50;
 
 typedef struct {
   int id;
